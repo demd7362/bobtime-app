@@ -2,27 +2,34 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+bool is2XXSuccessful(dynamic response) {
+  return response != null &&
+      (response['statusCode'] == 200 || response['statusCode'] == 201);
+}
+
 class ApiService {
-  static const String baseUrl = 'http://localhost:4070';
+  static const String baseUrl = 'http://144.24.74.58:4070';
 
   static Future<dynamic> get(String endpoint) async {
-    print('your request uri -> $baseUrl/$endpoint');
-    final response = await http.get(Uri.parse('$baseUrl/$endpoint'));
+    print('your request uri -> $baseUrl$endpoint');
+    final response = await http.get(Uri.parse('$baseUrl$endpoint'));
     return _handleResponse(response);
   }
 
   static Future<dynamic> post(String endpoint, {dynamic body}) async {
+    print('your request uri -> $baseUrl$endpoint');
     final response = await http.post(
-      Uri.parse('$baseUrl/$endpoint'),
+      Uri.parse('$baseUrl$endpoint'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode(body),
     );
     return _handleResponse(response);
   }
 
-  static Future<dynamic> put(String endpoint, {dynamic body}) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/$endpoint'),
+  static Future<dynamic> patch(String endpoint, {dynamic body}) async {
+    print('your request uri -> $baseUrl$endpoint');
+    final response = await http.patch(
+      Uri.parse('$baseUrl$endpoint'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode(body),
     );
@@ -30,30 +37,15 @@ class ApiService {
   }
 
   static Future<dynamic> delete(String endpoint) async {
-    final response = await http.delete(Uri.parse('$baseUrl/$endpoint'));
+    print('your request uri -> $baseUrl$endpoint');
+    final response = await http.delete(Uri.parse('$baseUrl$endpoint'));
     return _handleResponse(response);
   }
 
   static dynamic _handleResponse(http.Response response) {
-    switch (response.statusCode) {
-      case 200:
-      case 201:
-        return json.decode(response.body);
-      case 204:
-        return null;
-      case 400:
-        throw BadRequestException(response.body.toString());
-      case 401:
-      case 403:
-        throw UnauthorisedException(response.body.toString());
-      case 404:
-        throw NotFoundException(response.body.toString());
-      case 500:
-      default:
-        throw FetchDataException(
-          'Error occured while communication with server with status code : ${response.statusCode}',
-        );
-    }
+    final result = jsonDecode(response.body);
+    print('response -> $result');
+    return result;
   }
 }
 
