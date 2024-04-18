@@ -214,36 +214,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 TextButton(
                                   onPressed: () {
                                     Navigator.of(dialogContext).pop();
-                                    if (selectedOrder != '먹지 않음') {
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext dialogContext) {
-                                          return AlertDialog(
-                                            title: Text('입금 확인'),
-                                            content: Text('도시락 금액을 입금하셨나요?'),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.of(dialogContext)
-                                                      .pop();
-                                                },
-                                                child: Text('아니오'),
-                                              ),
-                                              TextButton(
-                                                onPressed: () async {
-                                                  Navigator.of(dialogContext)
-                                                      .pop();
-                                                  await ApiService.patch(
-                                                      context,
-                                                      '/api/v1/order/paid/$_userName');
-                                                },
-                                                child: Text('예'),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-                                    }
                                   },
                                   child: Text('확인'),
                                 ),
