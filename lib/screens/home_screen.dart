@@ -1,5 +1,6 @@
 import 'package:bobtime/screens/order_status_screen.dart';
 import 'package:bobtime/services/api_service.dart';
+import 'package:bobtime/services/notification_service.dart';
 import 'package:bobtime/utils/date_utils.dart';
 import 'package:bobtime/utils/string_utils.dart';
 import 'package:bobtime/widgets/order_dialog.dart';
@@ -22,6 +23,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    FlutterLocalNotification.init();
+    Future.delayed(const Duration(seconds: 3),
+        FlutterLocalNotification.requestNotificationPermission());
     _checkUserInfo();
   }
 
@@ -191,6 +195,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   builder: (BuildContext context) {
                     return OrderDialog(
                       onOrderSelected: (String selectedOrder) async {
+                        String formattedDate = getFormattedDate(_selectedDate);
+                        print(formattedDate);
                         int price = extractNumber(selectedOrder);
                         dynamic response = await ApiService.post(
                             context, '/api/v1/order/merge',
@@ -198,6 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               'order': {
                                 'productName': selectedOrder,
                                 'price': price,
+                                'createdAt': formattedDate
                               },
                               'user': {
                                 'name': _userName,
