@@ -179,47 +179,49 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
           return ListTile(
             title: Text(name),
             subtitle: Text(order['productName'] ?? '알 수 없는 도시락'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  order['paid'] ? '입금 완료' : '미입금',
-                  style: TextStyle(
-                    color: order['paid'] ? Colors.green : Colors.red,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(width: 8),
-                Switch(
-                  value: order['paid'] ?? false,
-                  onChanged: (value) async {
-                    dynamic response = await ApiService.patch(
-                        context, '/api/v1/order/toggle-paid/${order['num']}');
-                    setState(() {
-                      order['paid'] = value;
-                    });
+            trailing: order['productName'] != '먹지 않음'
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        order['paid'] ? '입금 완료' : '미입금',
+                        style: TextStyle(
+                          color: order['paid'] ? Colors.green : Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Switch(
+                        value: order['paid'] ?? false,
+                        onChanged: (value) async {
+                          dynamic response = await ApiService.patch(context,
+                              '/api/v1/order/toggle-paid/${order['num']}');
+                          setState(() {
+                            order['paid'] = value;
+                          });
 
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text(response['message']['title']),
-                          content: Text(response['message']['content']),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: Text('확인'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                ),
-              ],
-            ),
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text(response['message']['title']),
+                                content: Text(response['message']['content']),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text('확인'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  )
+                : null,
           );
         },
       ),
