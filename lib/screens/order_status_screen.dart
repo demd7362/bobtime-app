@@ -14,11 +14,19 @@ class OrderStatusScreen extends StatefulWidget {
 
 class _OrderStatusScreenState extends State<OrderStatusScreen> {
   bool isAdmin = false;
+  bool isEmpty = false;
 
   @override
   void initState() {
     super.initState();
     _checkAdminRole();
+    _checkIfOrdersEmpty();
+  }
+
+  void _checkIfOrdersEmpty() {
+    setState(() {
+      isEmpty = widget.orders.isEmpty;
+    });
   }
 
   Future<void> _checkAdminRole() async {
@@ -170,61 +178,75 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
             ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: widget.orders.length,
-        itemBuilder: (context, index) {
-          final order = widget.orders[index];
-          final name = order['user']['name'] ?? '알 수 없는 주문자';
-          print('order here index:$index, item $order');
-          return ListTile(
-            title: Text(name),
-            subtitle: Text(order['productName'] ?? '알 수 없는 도시락'),
-            trailing: order['productName'] != '먹지 않음'
-                ? Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        order['paid'] ? '입금 완료' : '미입금',
-                        style: TextStyle(
-                          color: order['paid'] ? Colors.green : Colors.red,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Switch(
-                        value: order['paid'] ?? false,
-                        onChanged: (value) async {
-                          dynamic response = await ApiService.patch(context,
-                              '/api/v1/order/toggle-paid/${order['num']}');
-                          setState(() {
-                            order['paid'] = value;
-                          });
+      body: isEmpty
+          ? Center(
+              child: Text(
+                '아직 아무도 주문하지 않았네요!',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey[400],
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            )
+          : ListView.builder(
+              itemCount: widget.orders.length,
+              itemBuilder: (context, index) {
+                final order = widget.orders[index];
+                final name = order['user']['name'] ?? '알 수 없는 주문자';
+                print('order here index:$index, item $order');
+                return ListTile(
+                  title: Text(name),
+                  subtitle: Text(order['productName'] ?? '알 수 없는 도시락'),
+                  trailing: order['productName'] != '먹지 않음'
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              order['paid'] ? '입금 완료' : '미입금',
+                              style: TextStyle(
+                                color:
+                                    order['paid'] ? Colors.green : Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Switch(
+                              value: order['paid'] ?? false,
+                              onChanged: (value) async {
+                                dynamic response = await ApiService.patch(
+                                    context,
+                                    '/api/v1/order/toggle-paid/${order['num']}');
+                                setState(() {
+                                  order['paid'] = value;
+                                });
 
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text(response['message']['title']),
-                                content: Text(response['message']['content']),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text('확인'),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ],
-                  )
-                : null,
-          );
-        },
-      ),
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: Text(response['message']['title']),
+                                      content:
+                                          Text(response['message']['content']),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text('확인'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        )
+                      : null,
+                );
+              },
+            ),
     );
   }
 }
