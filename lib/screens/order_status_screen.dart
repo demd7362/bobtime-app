@@ -30,7 +30,7 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
               value: order['paid'] ?? false,
               onChanged: (value) async {
                 dynamic response = await ApiService.patch(
-                    '/api/v1/order/toggle-paid/${order['num']}');
+                    context, '/api/v1/order/toggle-paid/${order['num']}');
                 setState(() {
                   order['paid'] = value;
                 });

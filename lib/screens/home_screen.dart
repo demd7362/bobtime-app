@@ -82,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 await prefs.setString('userName', nameController.text);
                 await prefs.setString('userRole', selectedRole!);
                 dynamic response =
-                    await ApiService.post('/api/v1/user/join', body: {
+                    await ApiService.post(context, '/api/v1/user/join', body: {
                   'user': {
                     'name': nameController.text,
                     'role': _roleMap[selectedRole]
@@ -147,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'logo.png',
+              'assets/logo.png',
               width: 200,
               height: 200,
             ),
@@ -171,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () async {
                 String formattedDate = getFormattedDate(_selectedDate);
                 dynamic response = await ApiService.get(
-                    '/api/v1/order/orders?date=$formattedDate');
+                    context, '/api/v1/order/orders?date=$formattedDate');
                 List<Map<String, dynamic>> orders =
                     List<Map<String, dynamic>>.from(response['data']);
                 print(orders);
@@ -192,16 +192,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     return OrderDialog(
                       onOrderSelected: (String selectedOrder) async {
                         int price = extractNumber(selectedOrder);
-                        dynamic response =
-                            await ApiService.post('/api/v1/order/merge', body: {
-                          'order': {
-                            'productName': selectedOrder,
-                            'price': price,
-                          },
-                          'user': {
-                            'name': _userName,
-                          }
-                        });
+                        dynamic response = await ApiService.post(
+                            context, '/api/v1/order/merge',
+                            body: {
+                              'order': {
+                                'productName': selectedOrder,
+                                'price': price,
+                              },
+                              'user': {
+                                'name': _userName,
+                              }
+                            });
 
                         showDialog(
                           context: context,
@@ -233,6 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   Navigator.of(dialogContext)
                                                       .pop();
                                                   await ApiService.patch(
+                                                      context,
                                                       '/api/v1/order/paid/$_userName');
                                                 },
                                                 child: Text('예'),

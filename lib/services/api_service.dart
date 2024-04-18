@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 bool is2XXSuccessful(dynamic response) {
@@ -8,39 +9,49 @@ bool is2XXSuccessful(dynamic response) {
 }
 
 class ApiService {
-  static const String baseUrl = 'http://144.24.74.58:4070';
+  static const String baseUrl = 'http://localhost:4070';
 
-  static Future<dynamic> get(String endpoint) async {
+  static Future<dynamic> get(BuildContext context, String endpoint) async {
     print('your request uri -> $baseUrl$endpoint');
+    showLoadingSpinner(context);
     final response = await http.get(Uri.parse('$baseUrl$endpoint'),
         headers: {'Content-Type': 'application/json; charset=utf-8'});
+    hideLoadingSpinner(context);
     return _handleResponse(response);
   }
 
-  static Future<dynamic> post(String endpoint, {dynamic body}) async {
+  static Future<dynamic> post(BuildContext context, String endpoint,
+      {dynamic body}) async {
     print('your request uri -> $baseUrl$endpoint');
+    showLoadingSpinner(context);
     final response = await http.post(
       Uri.parse('$baseUrl$endpoint'),
       headers: {'Content-Type': 'application/json; charset=utf-8'},
       body: json.encode(body),
     );
+    hideLoadingSpinner(context);
     return _handleResponse(response);
   }
 
-  static Future<dynamic> patch(String endpoint, {dynamic body}) async {
+  static Future<dynamic> patch(BuildContext context, String endpoint,
+      {dynamic body}) async {
     print('your request uri -> $baseUrl$endpoint');
+    showLoadingSpinner(context);
     final response = await http.patch(
       Uri.parse('$baseUrl$endpoint'),
       headers: {'Content-Type': 'application/json; charset=utf-8'},
       body: json.encode(body),
     );
+    hideLoadingSpinner(context);
     return _handleResponse(response);
   }
 
-  static Future<dynamic> delete(String endpoint) async {
+  static Future<dynamic> delete(BuildContext context, String endpoint) async {
     print('your request uri -> $baseUrl$endpoint');
+    showLoadingSpinner(context);
     final response = await http.delete(Uri.parse('$baseUrl$endpoint'),
         headers: {'Content-Type': 'application/json; charset=utf-8'});
+    hideLoadingSpinner(context);
     return _handleResponse(response);
   }
 
@@ -48,6 +59,22 @@ class ApiService {
     final result = jsonDecode(utf8.decode(response.bodyBytes));
     print('response -> $result');
     return result;
+  }
+
+  static void showLoadingSpinner(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+  }
+
+  static void hideLoadingSpinner(BuildContext context) {
+    Navigator.of(context).pop();
   }
 }
 
