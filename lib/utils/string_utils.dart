@@ -1,3 +1,7 @@
 int extractNumber(String str) {
-  return int.parse(str.replaceAll(RegExp(r'[^0-9]'), ''));
+  try {
+    return int.parse(str.replaceAll(RegExp(r'[^0-9]'), ''));
+  } catch (e) {
+    return 0;
+  }
 }

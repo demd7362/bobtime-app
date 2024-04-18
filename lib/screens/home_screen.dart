@@ -14,7 +14,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final Map<String, String> roleMap = {'참여자': 'participant', '관리자': 'admin'};
+  final Map<String, String> _roleMap = {'참여자': 'PARTICIPANT', '관리자': 'ADMIN'};
   DateTime _selectedDate = DateTime.now();
   String _userName = '';
   String _userRole = '';
@@ -41,7 +41,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _showUserInfoModal() async {
-    TextEditingController nameController = TextEditingController();
+    TextEditingController nameController =
+        TextEditingController(text: _userName);
     String? selectedRole;
 
     await showDialog(
@@ -77,11 +78,15 @@ class _HomeScreenState extends State<HomeScreen> {
             TextButton(
               onPressed: () async {
                 SharedPreferences prefs = await SharedPreferences.getInstance();
+                selectedRole ??= '참여자';
                 await prefs.setString('userName', nameController.text);
-                await prefs.setString('userRole', selectedRole ?? '참여자');
+                await prefs.setString('userRole', selectedRole!);
                 dynamic response =
                     await ApiService.post('/api/v1/user/join', body: {
-                  'user': {'name': nameController.text}
+                  'user': {
+                    'name': nameController.text,
+                    'role': _roleMap[selectedRole]
+                  }
                 });
                 if (is2XXSuccessful(response)) {
                   setState(() {
@@ -94,9 +99,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: Text('아이디 등록 실패'),
-                        content:
-                            Text(response['message'] ?? '서버에서 에러가 발생했습니다.'),
+                        title: Text(response['message']['title']),
+                        content: Text(response['message']['content']),
                         actions: [
                           TextButton(
                             onPressed: () {
@@ -187,65 +191,77 @@ class _HomeScreenState extends State<HomeScreen> {
                   builder: (BuildContext context) {
                     return OrderDialog(
                       onOrderSelected: (String selectedOrder) async {
-                        if (selectedOrder == '먹지 않음') {
-                          return;
-                        }
                         int price = extractNumber(selectedOrder);
-                        dynamic response = await ApiService.post(
-                            '/api/v1/order/create',
-                            body: {
-                              'order': {
-                                'role': roleMap[_userRole],
-                                'productName': selectedOrder,
-                                'price': price,
-                              },
-                              'user': {
-                                'name': _userName,
-                              }
-                            });
-                        if (is2XXSuccessful(response)) {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text('주문 완료'),
-                                content: Text('도시락 주문 신청이 성공적으로 완료되었습니다.'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text('확인'),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        } else {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text('주문 실패'),
-                                content: Text('도시락 주문 신청에 실패했습니다. 다시 시도해주세요.'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text('확인'),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        }
+                        dynamic response =
+                            await ApiService.post('/api/v1/order/merge', body: {
+                          'order': {
+                            'productName': selectedOrder,
+                            'price': price,
+                          },
+                          'user': {
+                            'name': _userName,
+                          }
+                        });
+
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext dialogContext) {
+                            return AlertDialog(
+                              title: Text(response['message']['title']),
+                              content: Text(response['message']['content']),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(dialogContext).pop();
+                                    if (selectedOrder != '먹지 않음') {
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext dialogContext) {
+                                          return AlertDialog(
+                                            title: Text('입금 확인'),
+                                            content: Text('도시락 금액을 입금하셨나요?'),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(dialogContext)
+                                                      .pop();
+                                                },
+                                                child: Text('아니오'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () async {
+                                                  Navigator.of(dialogContext)
+                                                      .pop();
+                                                  await ApiService.patch(
+                                                      '/api/v1/order/paid/$_userName');
+                                                },
+                                                child: Text('예'),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    }
+                                  },
+                                  child: Text('확인'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
                       },
                     );
                   },
                 );
               },
               child: Text('도시락 선택'),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                _showUserInfoModal();
+              },
+              child: Text('이름 변경'),
             ),
           ],
         ),

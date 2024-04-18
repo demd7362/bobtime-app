@@ -29,48 +29,29 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
             trailing: Switch(
               value: order['paid'] ?? false,
               onChanged: (value) async {
-                await ApiService.patch(
+                dynamic response = await ApiService.patch(
                     '/api/v1/order/toggle-paid/${order['num']}');
                 setState(() {
                   order['paid'] = value;
                 });
-                if (value) {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('지불 완료'),
-                        content: Text('$name의 도시락 대금 지불 완료'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('확인'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                } else {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('지불 취소'),
-                        content: Text('$name의 도시락 대금 지불 취소'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('확인'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                }
+
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text(response['message']['title']),
+                      content: Text(response['message']['content']),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text('확인'),
+                        ),
+                      ],
+                    );
+                  },
+                );
               },
             ),
           );

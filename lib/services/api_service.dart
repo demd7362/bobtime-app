@@ -12,7 +12,8 @@ class ApiService {
 
   static Future<dynamic> get(String endpoint) async {
     print('your request uri -> $baseUrl$endpoint');
-    final response = await http.get(Uri.parse('$baseUrl$endpoint'));
+    final response = await http.get(Uri.parse('$baseUrl$endpoint'),
+        headers: {'Content-Type': 'application/json; charset=utf-8'});
     return _handleResponse(response);
   }
 
@@ -20,7 +21,7 @@ class ApiService {
     print('your request uri -> $baseUrl$endpoint');
     final response = await http.post(
       Uri.parse('$baseUrl$endpoint'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json; charset=utf-8'},
       body: json.encode(body),
     );
     return _handleResponse(response);
@@ -30,7 +31,7 @@ class ApiService {
     print('your request uri -> $baseUrl$endpoint');
     final response = await http.patch(
       Uri.parse('$baseUrl$endpoint'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json; charset=utf-8'},
       body: json.encode(body),
     );
     return _handleResponse(response);
@@ -38,12 +39,13 @@ class ApiService {
 
   static Future<dynamic> delete(String endpoint) async {
     print('your request uri -> $baseUrl$endpoint');
-    final response = await http.delete(Uri.parse('$baseUrl$endpoint'));
+    final response = await http.delete(Uri.parse('$baseUrl$endpoint'),
+        headers: {'Content-Type': 'application/json; charset=utf-8'});
     return _handleResponse(response);
   }
 
   static dynamic _handleResponse(http.Response response) {
-    final result = jsonDecode(response.body);
+    final result = jsonDecode(utf8.decode(response.bodyBytes));
     print('response -> $result');
     return result;
   }
