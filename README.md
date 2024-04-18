@@ -5,3 +5,9 @@
 
 - flutter build apk --release
 - flutter build ios --release
+- flutter build web --release
+
+# Testing
+
+- adb devices
+- flutter run --release
