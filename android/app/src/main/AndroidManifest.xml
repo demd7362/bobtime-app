@@ -5,9 +5,9 @@
     <application
             android:usesCleartextTraffic="true"
             android:enableOnBackInvokedCallback="true"
-            android:label="bobtime"
+            android:label="밥타임"
             android:name="${applicationName}"
-            android:icon="@mipmap/ic_launcher">
+            android:icon="@mipmap/logo">
         <activity
                 android:name=".MainActivity"
                 android:exported="true"
