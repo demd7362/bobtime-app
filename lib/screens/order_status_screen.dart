@@ -15,6 +15,7 @@ class OrderStatusScreen extends StatefulWidget {
 class _OrderStatusScreenState extends State<OrderStatusScreen> {
   bool isAdmin = false;
   bool isEmpty = false;
+  bool showNotEating = true;
   Map<String, Map<String, int>> orderCountByDateAndProduct = {};
   String? selectedDate;
 
@@ -200,6 +201,13 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
                     selectedDate)
             .toList();
 
+    // 먹지 않음 주문 필터링
+    if (!showNotEating) {
+      filteredOrders = filteredOrders
+          .where((order) => order['productName'] != '먹지 않음')
+          .toList();
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('주문 현황'),
@@ -213,6 +221,14 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
               icon: Icon(Icons.money),
               onPressed: _showUnpaidAmount,
             ),
+          IconButton(
+            icon: Icon(showNotEating ? Icons.visibility : Icons.visibility_off),
+            onPressed: () {
+              setState(() {
+                showNotEating = !showNotEating;
+              });
+            },
+          ),
         ],
       ),
       body: Column(
@@ -227,6 +243,13 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
                   padding: const EdgeInsets.all(8.0),
                   child: ElevatedButton(
                     onPressed: () => _showOrdersByDate(date),
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding:
+                          EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    ),
                     child: Column(
                       children: [
                         Text(date),
@@ -268,8 +291,26 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
                     itemBuilder: (context, index) {
                       final order = filteredOrders[index];
                       final name = order['user']['name'] ?? '알 수 없는 주문자';
+                      final createdAt = order['createdAt'];
+                      final formattedDate = createdAt != null
+                          ? DateFormat('yyyy-MM-dd')
+                              .format(DateTime.parse(createdAt))
+                          : '날짜 정보 없음';
+
                       return ListTile(
-                        title: Text(name),
+                        title: Row(
+                          children: [
+                            Text(name),
+                            SizedBox(width: 8),
+                            Text(
+                              '($formattedDate)',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
                         subtitle: Text(order['productName'] ?? '알 수 없는 도시락'),
                         trailing: order['productName'] != '먹지 않음'
                             ? Row(
