@@ -16,7 +16,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final Map<String, String> _roleMap = {'참여자': 'PARTICIPANT', '관리자': 'ADMIN'};
-  DateTime _selectedDate = DateTime.now();
+  DateTimeRange _selectedDateRange = DateTimeRange(
+    start: DateTime.now(),
+    end: DateTime.now(),
+  );
   String _userName = '';
   String _userRole = '';
 
@@ -126,16 +129,28 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+  void _selectDateRange(BuildContext context) async {
+    final DateTimeRange? pickedRange = await showDateRangePicker(
       context: context,
-      initialDate: _selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
+      initialDateRange: _selectedDateRange,
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            primaryColor: Colors.blue,
+            buttonTheme: ButtonThemeData(
+              textTheme: ButtonTextTheme.primary,
+            ),
+            colorScheme: ColorScheme.light(primary: Colors.blue),
+          ),
+          child: child!,
+        );
+      },
     );
-    if (picked != null && picked != _selectedDate) {
+    if (pickedRange != null) {
       setState(() {
-        _selectedDate = picked;
+        _selectedDateRange = pickedRange;
       });
     }
   }
@@ -162,20 +177,25 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SizedBox(height: 10),
             Text(
-              '선택한 날짜: ${toPrettyString(_selectedDate)}',
+              _selectedDateRange.start == _selectedDateRange.end
+                  ? '선택한 날짜 ${toPrettyString(_selectedDateRange.start)}'
+                  : '선택한 날짜: ${toPrettyString(_selectedDateRange.start)} ~ ${toPrettyString(_selectedDateRange.end)}',
               style: TextStyle(fontSize: 18),
             ),
             SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () => _selectDate(context),
+              onPressed: () => _selectDateRange(context),
               child: Text('날짜 선택'),
             ),
             SizedBox(height: 10),
             ElevatedButton(
               onPressed: () async {
-                String formattedDate = getFormattedDate(_selectedDate);
-                dynamic response = await ApiService.get(
-                    context, '/api/v1/order/orders?date=$formattedDate');
+                String formattedStartDate =
+                    getFormattedDate(_selectedDateRange.start);
+                String formattedEndDate =
+                    getFormattedDate(_selectedDateRange.end);
+                dynamic response = await ApiService.get(context,
+                    '/api/v1/order/orders?start=$formattedStartDate&end=$formattedEndDate');
                 List<Map<String, dynamic>> orders =
                     List<Map<String, dynamic>>.from(response['data']);
                 print(orders);
@@ -195,16 +215,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   builder: (BuildContext context) {
                     return OrderDialog(
                       onOrderSelected: (String selectedOrder) async {
-                        String formattedDate = getFormattedDate(_selectedDate);
-                        print(formattedDate);
+                        String formattedStartDate =
+                            getFormattedDate(_selectedDateRange.start);
+                        String formattedEndDate =
+                            getFormattedDate(_selectedDateRange.end);
                         int price = extractNumber(selectedOrder);
-                        dynamic response = await ApiService.post(
-                            context, '/api/v1/order/merge',
+                        dynamic response = await ApiService.post(context,
+                            '/api/v1/order/merge?start=$formattedStartDate&end=$formattedEndDate',
                             body: {
                               'order': {
                                 'productName': selectedOrder,
                                 'price': price,
-                                'createdAt': formattedDate
                               },
                               'user': {
                                 'name': _userName,
