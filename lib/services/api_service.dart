@@ -9,7 +9,7 @@ bool is2XXSuccessful(dynamic response) {
 }
 
 class ApiService {
-  static const String baseUrl = 'https://144.24.74.58';
+  static const String baseUrl = 'http://144.24.74.58:4070';
 
   static Future<dynamic> get(BuildContext context, String endpoint) async {
     print('your request uri -> $baseUrl$endpoint');
