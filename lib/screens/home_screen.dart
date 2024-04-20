@@ -178,8 +178,8 @@ class _HomeScreenState extends State<HomeScreen> {
             SizedBox(height: 10),
             Text(
               _selectedDateRange.start == _selectedDateRange.end
-                  ? '선택한 날짜 ${toPrettyString(_selectedDateRange.start)}'
-                  : '선택한 날짜: ${toPrettyString(_selectedDateRange.start)} ~ ${toPrettyString(_selectedDateRange.end)}',
+                  ? toPrettyString(_selectedDateRange.start)
+                  : '${toPrettyString(_selectedDateRange.start)} ~ ${toPrettyString(_selectedDateRange.end)}',
               style: TextStyle(fontSize: 18),
             ),
             SizedBox(height: 10),
