@@ -24,11 +24,10 @@ class _HomeScreenState extends State<HomeScreen> {
   String _userRole = '';
 
   @override
-  void initState() {
+  void initState() async {
     super.initState();
-    FlutterLocalNotification.init();
-    Future.delayed(const Duration(seconds: 3),
-        FlutterLocalNotification.requestNotificationPermission());
+    await NotificationService.requestNotificationPermission(context);
+    NotificationService.configureSelectNotificationSubject(context);
     _checkUserInfo();
   }
 
@@ -49,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _showUserInfoModal() async {
     TextEditingController nameController =
-        TextEditingController(text: _userName);
+    TextEditingController(text: _userName);
     String? selectedRole;
 
     await showDialog(
@@ -89,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 await prefs.setString('userName', nameController.text);
                 await prefs.setString('userRole', selectedRole!);
                 dynamic response =
-                    await ApiService.post(context, '/api/v1/user/join', body: {
+                await ApiService.post(context, '/api/v1/user/join', body: {
                   'user': {
                     'name': nameController.text,
                     'role': _roleMap[selectedRole]
@@ -179,7 +178,9 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(
               _selectedDateRange.start == _selectedDateRange.end
                   ? toPrettyString(_selectedDateRange.start)
-                  : '${toPrettyString(_selectedDateRange.start)} ~ ${toPrettyString(_selectedDateRange.end)}',
+                  : '${toPrettyString(
+                  _selectedDateRange.start)} ~ ${toPrettyString(
+                  _selectedDateRange.end)}',
               style: TextStyle(fontSize: 18),
             ),
             SizedBox(height: 10),
@@ -191,13 +192,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ElevatedButton(
               onPressed: () async {
                 String formattedStartDate =
-                    getFormattedDate(_selectedDateRange.start);
+                getFormattedDate(_selectedDateRange.start);
                 String formattedEndDate =
-                    getFormattedDate(_selectedDateRange.end);
+                getFormattedDate(_selectedDateRange.end);
                 dynamic response = await ApiService.get(context,
                     '/api/v1/order/orders?start=$formattedStartDate&end=$formattedEndDate');
                 List<Map<String, dynamic>> orders =
-                    List<Map<String, dynamic>>.from(response['data']);
+                List<Map<String, dynamic>>.from(response['data']);
                 print(orders);
                 Navigator.push(
                   context,
@@ -216,9 +217,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     return OrderDialog(
                       onOrderSelected: (String selectedOrder) async {
                         String formattedStartDate =
-                            getFormattedDate(_selectedDateRange.start);
+                        getFormattedDate(_selectedDateRange.start);
                         String formattedEndDate =
-                            getFormattedDate(_selectedDateRange.end);
+                        getFormattedDate(_selectedDateRange.end);
                         int price = extractNumber(selectedOrder);
                         dynamic response = await ApiService.post(context,
                             '/api/v1/order/merge?start=$formattedStartDate&end=$formattedEndDate',
