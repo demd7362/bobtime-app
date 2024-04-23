@@ -24,9 +24,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String _userRole = '';
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
-    await NotificationService.requestNotificationPermission(context);
+    NotificationService.requestNotificationPermission(context);
     NotificationService.configureSelectNotificationSubject(context);
     _checkUserInfo();
   }

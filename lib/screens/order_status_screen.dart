@@ -216,11 +216,10 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
             icon: Icon(Icons.info),
             onPressed: _showPaymentInfo,
           ),
-          if (isAdmin)
-            IconButton(
-              icon: Icon(Icons.money),
-              onPressed: _showUnpaidAmount,
-            ),
+          IconButton(
+            icon: Icon(Icons.money),
+            onPressed: _showUnpaidAmount,
+          ),
           IconButton(
             icon: Icon(showNotEating ? Icons.visibility : Icons.visibility_off),
             onPressed: () {
