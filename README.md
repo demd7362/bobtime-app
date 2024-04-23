@@ -11,3 +11,10 @@
 
 - adb devices
 - flutter run --release
+
+# Setting
+
+- flutter doctor
+- flutter pub get 
+- flutter pub upgrade
+- flutter pub run flutter_native_splash:create
